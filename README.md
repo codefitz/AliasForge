@@ -4,7 +4,7 @@
 
 ## ✨ Features  
 - Cross-platform: macOS and Linux  
-- Multi-shell: Bash, Zsh, and Fish support  
+- Multi-shell: Bash, Zsh, Fish, and NuShell support  
 - Idempotent: safe to run multiple times  
 - Easy to customise: edit one file, reload, done  
 - Uninstall option for a clean slate  
@@ -48,13 +48,23 @@ alias gs='git status -sb'
 alias dps='docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
 alias please='sudo'
 
+### NuShell
+
+NuShell support is installed automatically. The script writes `~/.config/nushell/aliasforge.nu` and ensures `config.nu` sources it via a managed marker block. Reload NuShell with:
+
+```nu
+source ~/.config/nushell/config.nu
+```
+
+Inside NuShell, use the provided `reloadprofile`/`sp` helpers if you need a quick reminder of the reload command.
+
 🧹 Uninstall
 
 To remove AliasForge and all its changes:
 
 ./install-aliasforge.sh --uninstall
 
-This cleans up rc files and deletes the alias files.
+This cleans up rc files and deletes the alias files (including the NuShell module).
 
 📦 Roadmap
 	•	Remote sync (share aliases across machines)
