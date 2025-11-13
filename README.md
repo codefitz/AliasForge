@@ -34,6 +34,16 @@ source ~/.zshrc   # Zsh
 source ~/.bashrc  # Bash  
 exec fish         # Fish  
 
+### 🍺 macOS Homebrew helpers
+
+If you're on macOS and want the recommended prompt/tools stack, run:
+
+```sh
+./install-macos-brew.sh
+```
+
+The script installs everything listed in `brew-requirements.txt`, skipping entries that are already present. Add or remove packages by editing that file—use the `cask:` prefix (e.g. `cask:ghostty`) for apps that ship as casks.
+
 ⚙️ Customisation
 
 All your aliases live in:

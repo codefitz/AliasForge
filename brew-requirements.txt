@@ -1,0 +1,9 @@
+# CLI formulas
+starship
+zoxide
+nushell
+chezmoi
+gh
+
+# GUI / app casks
+cask:ghostty
