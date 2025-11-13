@@ -124,6 +124,44 @@ whichshell() {
   shell_name="$(ps -p $$ -o comm= 2>/dev/null | awk -F/ '{print $NF}')"
   echo "Shell: $shell_name | OS: $os"
 }
+aliasforge__detect_profile_file() {
+  shell_name="${SHELL##*/}"
+  os="$(uname -s 2>/dev/null || echo Unknown)"
+  case "$shell_name" in
+    zsh)
+      [ -f "$HOME/.zshrc" ] && { printf '%s\n' "$HOME/.zshrc"; return 0; }
+      ;;
+    bash)
+      if [ "$os" = "Darwin" ] && [ -f "$HOME/.bash_profile" ]; then
+        printf '%s\n' "$HOME/.bash_profile"
+        return 0
+      fi
+      [ -f "$HOME/.bashrc" ] && { printf '%s\n' "$HOME/.bashrc"; return 0; }
+      ;;
+    ksh)
+      [ -f "$HOME/.kshrc" ] && { printf '%s\n' "$HOME/.kshrc"; return 0; }
+      ;;
+  esac
+  for fallback in "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$fallback" ]; then
+      printf '%s\n' "$fallback"
+      return 0
+    fi
+  done
+  return 1
+}
+aliasforge_reload_profile() {
+  rc="$(aliasforge__detect_profile_file 2>/dev/null || true)"
+  if [ -n "$rc" ]; then
+    # shellcheck disable=SC1090
+    . "$rc"
+    printf "Reloaded %s\n" "$rc"
+  else
+    echo "AliasForge reload: no profile file found to source."
+  fi
+}
+alias reloadprofile='aliasforge_reload_profile'
+alias sp='aliasforge_reload_profile'
 
 # Project helpers (customise as needed)
 # alias tw='cd ~/projects/traversys && code .'
@@ -195,6 +233,27 @@ function whichshell
     set shell_name (ps -p %self -o comm= ^/dev/null | awk -F/ '{print $NF}')
     echo "Shell: $shell_name | OS: $os"
 end
+function __aliasforge_detect_fish_profile
+    set -l candidates ~/.config/fish/config.fish ~/.config/fish/conf.d/aliasforge.fish
+    for rc in $candidates
+        if test -f "$rc"
+            echo "$rc"
+            return 0
+        end
+    end
+    return 1
+end
+function aliasforge_reload_profile
+    set -l rc (__aliasforge_detect_fish_profile)
+    if test -n "$rc"
+        source "$rc"
+        printf "Reloaded %s\n" "$rc"
+    else
+        echo "AliasForge reload: no profile file found to source."
+    end
+end
+function reloadprofile; aliasforge_reload_profile; end
+function sp; aliasforge_reload_profile; end
 
 # project helpers (customise)
 # function proj; cd ~/projects/project; code .; end
