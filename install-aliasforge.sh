@@ -190,6 +190,10 @@ aliasforge_reload_profile() {
 alias reloadprofile='aliasforge_reload_profile'
 alias sp='aliasforge_reload_profile'
 
+# Chezmoi helpers
+alias cme='chezmoi edit'
+alias cma='chezmoi apply'
+
 # Project helpers (customise as needed)
 # alias tw='cd ~/projects/traversys && code .'
 EOF
@@ -281,6 +285,10 @@ function aliasforge_reload_profile
 end
 function reloadprofile; aliasforge_reload_profile; end
 function sp; aliasforge_reload_profile; end
+
+# chezmoi helpers
+function cme; command chezmoi edit $argv; end
+function cma; command chezmoi apply $argv; end
 
 # project helpers (customise)
 # function proj; cd ~/projects/project; code .; end
@@ -393,6 +401,10 @@ def aliasforge_reload_profile [] {
 
 alias reloadprofile = aliasforge_reload_profile
 alias sp = aliasforge_reload_profile
+
+# chezmoi helpers
+alias cme = ^chezmoi edit
+alias cma = ^chezmoi apply
 
 # project helpers placeholder
 # alias proj = ^cd ~/projects/project && ^code .
