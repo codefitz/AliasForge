@@ -68,6 +68,29 @@ source ~/.config/nushell/config.nu
 
 Inside NuShell, use the provided `reloadprofile`/`sp` helpers if you need a quick reminder of the reload command.
 
+### 🧳 Using AliasForge with chezmoi
+
+Chezmoi is a great way to sync your aliases across machines. AliasForge already ships with `cme`/`cma` helpers, and you can keep the install script plus the generated alias files in your chezmoi source so every new machine is ready in one `chezmoi apply`.
+
+1. Install chezmoi (it is listed in `brew-requirements.txt`) and initialise your dotfiles repo: `chezmoi init <your-repo>`.
+2. Capture the AliasForge-managed files so edits are tracked:
+   ```sh
+   chezmoi add ~/.aliasforge.sh
+   chezmoi add ~/.config/fish/conf.d/aliasforge.fish
+   chezmoi add ~/.config/nushell/aliasforge.nu
+   ```
+3. Drop the installer into `.chezmoiscripts` so it runs the first time you apply on each host. Running it *before* the rest of your files ensures the rc markers are ready before chezmoi writes your customised aliases:
+   ```sh
+   SRC="$(chezmoi source-path)"
+   mkdir -p "$SRC/.chezmoiscripts"
+   curl -fsSL https://raw.githubusercontent.com/codefitz/aliasforge/main/install-aliasforge.sh \
+     > "$SRC/.chezmoiscripts/run_once_before_install-aliasforge.sh.tmpl"
+   chmod +x "$SRC/.chezmoiscripts/run_once_before_install-aliasforge.sh.tmpl"
+   chezmoi add "$SRC/.chezmoiscripts/run_once_before_install-aliasforge.sh.tmpl"
+   ```
+4. On a new machine, run `chezmoi apply`. Chezmoi executes the installer once (linking AliasForge into your rc files) and then writes your synced alias files, so everything is ready after a quick shell reload.
+5. Use `chezmoi edit ~/.aliasforge.sh` (and the Fish/Nu files as needed) plus `chezmoi apply` to push updates to every machine.
+
 🧹 Uninstall
 
 To remove AliasForge and all its changes:
@@ -77,7 +100,6 @@ To remove AliasForge and all its changes:
 This cleans up rc files and deletes the alias files (including the NuShell module).
 
 📦 Roadmap
-	•	Remote sync (share aliases across machines)
 	•	Optional alias packs (git, docker, k8s, cloud)
 	•	Configurable install directory
 
