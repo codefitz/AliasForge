@@ -5,9 +5,11 @@ nushell
 chezmoi
 gh
 dust
+eza
 bat
 btop
 codex
+fzf
 zsh-autosuggestions
 
 # GUI / app casks

@@ -97,10 +97,33 @@ write_alias_block_sh() {
 # Basic nav/listing
 alias ..='cd ..'
 alias ...='cd ../..'
+ls() {
+  if command -v eza >/dev/null 2>&1; then
+    command eza "$@"
+  else
+    command ls "$@"
+  fi
+}
 alias ll='ls -lah'
 alias la='ls -A'
 alias l='ls -CF'
+tree() {
+  if command -v eza >/dev/null 2>&1; then
+    command eza --tree "$@"
+  else
+    command tree "$@" 2>/dev/null || command ls "$@"
+  fi
+}
 alias hgrep='history | grep'
+
+# File viewing
+cat() {
+  if command -v bat >/dev/null 2>&1; then
+    command bat --paging=never --plain "$@"
+  else
+    command cat "$@"
+  fi
+}
 
 # Git
 alias gs='git status -sb'
@@ -190,9 +213,18 @@ aliasforge_reload_profile() {
 alias reloadprofile='aliasforge_reload_profile'
 alias sp='aliasforge_reload_profile'
 
+# Homebrew
+alias bi='brew install'
+alias bu='brew update'
+alias bup='brew upgrade'
+alias bun='brew uninstall'
+alias bls='brew list'
+
 # Chezmoi helpers
 alias cme='chezmoi edit'
 alias cma='chezmoi apply'
+alias cmu='chezmoi update'
+alias cmd='chezmoi diff'
 
 # Project helpers (customise as needed)
 # alias tw='cd ~/projects/traversys && code .'
@@ -207,10 +239,35 @@ write_alias_block_fish() {
 # nav/listing
 function ..;  cd ..; end
 function ...; cd ../..; end
-function ll;  command ls -lah; end
-function la;  command ls -A; end
-function l;   command ls -CF; end
+function ls
+    if type -q eza
+        command eza $argv
+    else
+        command ls $argv
+    end
+end
+function ll;  ls -lah $argv; end
+function la;  ls -A $argv; end
+function l;   ls -CF $argv; end
+function tree
+    if type -q eza
+        command eza --tree $argv
+    else if type -q tree
+        command tree $argv
+    else
+        command ls $argv
+    end
+end
 function hgrep; command history | grep; end
+
+# file viewing
+function cat
+    if type -q bat
+        command bat --paging=never --plain $argv
+    else
+        command cat $argv
+    end
+end
 
 # git
 function gs;  command git status -sb; end
@@ -286,9 +343,18 @@ end
 function reloadprofile; aliasforge_reload_profile; end
 function sp; aliasforge_reload_profile; end
 
+# homebrew
+function bi;  command brew install $argv; end
+function bu;  command brew update $argv; end
+function bup; command brew upgrade $argv; end
+function bun; command brew uninstall $argv; end
+function bls; command brew list $argv; end
+
 # chezmoi helpers
 function cme; command chezmoi edit $argv; end
 function cma; command chezmoi apply $argv; end
+function cmu; command chezmoi update $argv; end
+function cmd; command chezmoi diff $argv; end
 
 # project helpers (customise)
 # function proj; cd ~/projects/project; code .; end
@@ -303,14 +369,39 @@ write_alias_block_nu() {
 # nav/listing
 alias .. = cd ..
 alias ... = cd ../..
-alias ll = ^ls -lah
-alias la = ^ls -A
-alias l = ^ls -CF
+def --wrapped ls [...args] {
+    if ((which eza | length) > 0) {
+        ^eza ...$args
+    } else {
+        ^ls ...$args
+    }
+}
+alias ll = ls -lah
+alias la = ls -A
+alias l = ls -CF
+def tree [...args] {
+    if ((which eza | length) > 0) {
+        ^eza --tree ...$args
+    } else if ((which tree | length) > 0) {
+        ^tree ...$args
+    } else {
+        ls ...$args
+    }
+}
 def hgrep [pattern: string] {
     if (($pattern | str length) == 0) {
         print "Usage: hgrep <pattern>"
     } else {
         history | where command =~ $pattern
+    }
+}
+
+# file viewing
+def --wrapped cat [...args] {
+    if ((which bat | length) > 0) {
+        ^bat --paging=never --plain ...$args
+    } else {
+        ^cat ...$args
     }
 }
 
@@ -402,9 +493,18 @@ def aliasforge_reload_profile [] {
 alias reloadprofile = aliasforge_reload_profile
 alias sp = aliasforge_reload_profile
 
+# homebrew
+alias bi = ^brew install
+alias bu = ^brew update
+alias bup = ^brew upgrade
+alias bun = ^brew uninstall
+alias bls = ^brew list
+
 # chezmoi helpers
 alias cme = ^chezmoi edit
 alias cma = ^chezmoi apply
+alias cmu = ^chezmoi update
+alias cmd = ^chezmoi diff
 
 # project helpers placeholder
 # alias proj = ^cd ~/projects/project && ^code .
