@@ -174,6 +174,48 @@ whichshell() {
   shell_name="$(ps -p $$ -o comm= 2>/dev/null | awk -F/ '{print $NF}')"
   echo "Shell: $shell_name | OS: $os"
 }
+triage_env() {
+  echo "=== HOSTNAME ==="
+  hostname
+
+  echo
+  echo "=== PWD ==="
+  pwd
+
+  echo
+  echo "=== SHELL / VERSION ==="
+  echo "${SHELL-}"
+  if [ -n "${SHELL-}" ]; then
+    "$SHELL" --version 2>&1 | head -n 1
+  fi
+
+  echo
+  echo "=== PATH (first 10 entries) ==="
+  printf "%s" "$PATH" | tr ':' '\n' | head -n 10
+
+  echo
+  echo "=== GIT STATUS (if repo) ==="
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git status -sb
+  else
+    echo "Not a git repo"
+  fi
+}
+afupdate() {
+  tmp="$(mktemp -t aliasforge.XXXXXX)" || return 1
+  if [ -z "${tmp-}" ]; then
+    echo "mktemp failed"
+    return 1
+  fi
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL https://raw.githubusercontent.com/codefitz/aliasforge/main/install-aliasforge.sh -o "$tmp" &&
+      sh "$tmp"
+  else
+    echo "curl not found; cannot update"
+  fi
+  rm -f "$tmp"
+}
+alias afu='afupdate'
 aliasforge__detect_profile_file() {
   shell_name="${SHELL##*/}"
   os="$(uname -s 2>/dev/null || echo Unknown)"
@@ -321,6 +363,47 @@ function whichshell
     set shell_name (ps -p %self -o comm= ^/dev/null | awk -F/ '{print $NF}')
     echo "Shell: $shell_name | OS: $os"
 end
+function triage_env
+    echo "=== HOSTNAME ==="
+    hostname
+
+    echo
+    echo "=== PWD ==="
+    pwd
+
+    echo
+    echo "=== SHELL / VERSION ==="
+    echo "$SHELL"
+    if test -n "$SHELL"
+        $SHELL --version 2>&1 | head -n 1
+    end
+
+    echo
+    echo "=== PATH (first 10 entries) ==="
+    printf "%s\n" $PATH | head -n 10
+
+    echo
+    echo "=== GIT STATUS (if repo) ==="
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1
+        git status -sb
+    else
+        echo "Not a git repo"
+    end
+end
+function afupdate
+    set tmp (mktemp -t aliasforge.XXXXXX)
+    if test -z "$tmp"
+        echo "mktemp failed"
+        return 1
+    end
+    if type -q curl
+        curl -fsSL https://raw.githubusercontent.com/codefitz/aliasforge/main/install-aliasforge.sh -o $tmp; and sh $tmp
+    else
+        echo "curl not found; cannot update"
+    end
+    rm -f $tmp
+end
+function afu; afupdate; end
 function __aliasforge_detect_fish_profile
     set -l candidates ~/.config/fish/config.fish ~/.config/fish/conf.d/aliasforge.fish
     for rc in $candidates
@@ -486,12 +569,72 @@ def whichshell [] {
     print $"Shell: nu | OS: ($os)"
 }
 
+def triage_env [] {
+    print "=== HOSTNAME ==="
+    try {
+        ^hostname
+        | lines
+        | each {|line| print $line}
+    } catch {|_| {}}
+
+    print "\n=== PWD ==="
+    print (pwd)
+
+    print "\n=== SHELL / VERSION ==="
+    let shell = ($env.SHELL? | default "")
+    print $shell
+    if ($shell | str length) > 0 {
+        try {
+            run-external $shell "--version"
+            | lines
+            | first 1
+            | each {|line| print $line}
+        } catch {|_| {}}
+    }
+
+    print "\n=== PATH (first 10 entries) ==="
+    $env.PATH
+    | split row (char path_sep)
+    | take 10
+    | each {|segment| print $segment}
+
+    print "\n=== GIT STATUS (if repo) ==="
+    if ((which git | length) == 0) {
+        print "git not installed"
+    } else {
+        try {
+            ^git status -sb
+            | lines
+            | each {|line| print $line}
+        } catch {|_| print "Not a git repo"}
+    }
+}
+
+def afupdate [] {
+    let tmp = (mktemp -t aliasforge.XXXXXX | str trim)
+    if (($tmp | str length) == 0) {
+        print "mktemp failed"
+        return
+    }
+    if ((which curl | length) == 0) {
+        print "curl not found; cannot update"
+        rm $tmp
+        return
+    }
+    try {
+        curl -fsSL https://raw.githubusercontent.com/codefitz/aliasforge/main/install-aliasforge.sh | save -f $tmp
+        sh $tmp
+    } catch {|_| print "update failed"}
+    rm $tmp
+}
+
 def aliasforge_reload_profile [] {
     print "Reload NuShell aliases with: source ~/.config/nushell/config.nu"
 }
 
 alias reloadprofile = aliasforge_reload_profile
 alias sp = aliasforge_reload_profile
+alias afu = afupdate
 
 # homebrew
 alias bi = ^brew install
