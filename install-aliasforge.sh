@@ -97,6 +97,13 @@ write_alias_block_sh() {
 # Basic nav/listing
 alias ..='cd ..'
 alias ...='cd ../..'
+cd() {
+  if command -v z >/dev/null 2>&1; then
+    command z "$@"
+  else
+    command cd "$@"
+  fi
+}
 ls() {
   if command -v eza >/dev/null 2>&1; then
     command eza "$@"
@@ -201,6 +208,25 @@ triage_env() {
     echo "Not a git repo"
   fi
 }
+aliasforge_list_aliases() {
+  if alias 1>/dev/null 2>&1; then
+    alias | sed -E "s/^alias[[:space:]]+([^=]+)=['\"]?(.*)['\"]?$/\\1: \\2/"
+  fi
+  cat <<'AF_ALIASES'
+cd: function wrapper (prefers z, fallback cd)
+ls: function wrapper (prefers eza, fallback ls)
+tree: function wrapper (prefers eza --tree, fallback tree/ls)
+cat: function wrapper (prefers bat --paging=never --plain)
+lanip: function wrapper showing internal IP
+please: function wrapper to sudo the last or provided command
+whichshell: function wrapper printing shell and OS
+triage_env: function wrapper showing host context
+afupdate: function wrapper updating AliasForge
+aliasforge_reload_profile: function wrapper reloading the detected profile
+AF_ALIASES
+}
+alias afaliases='aliasforge_list_aliases'
+alias afa='aliasforge_list_aliases'
 afupdate() {
   tmp="$(mktemp -t aliasforge.XXXXXX)" || return 1
   if [ -z "${tmp-}" ]; then
@@ -281,6 +307,13 @@ write_alias_block_fish() {
 # nav/listing
 function ..;  cd ..; end
 function ...; cd ../..; end
+function cd
+    if type -q z
+        command z $argv
+    else
+        builtin cd $argv
+    end
+end
 function ls
     if type -q eza
         command eza $argv
@@ -390,6 +423,92 @@ function triage_env
         echo "Not a git repo"
     end
 end
+function __aliasforge_print_alias_list
+    set -l aliasforge_pairs \
+        "..|cd .." \
+        "...|cd ../.." \
+        "cd|function wrapper (prefers z, fallback cd)" \
+        "ls|function wrapper (prefers eza, fallback ls)" \
+        "ll|ls -lah" \
+        "la|ls -A" \
+        "l|ls -CF" \
+        "tree|function wrapper (prefers eza --tree, fallback tree/ls)" \
+        "hgrep|history | grep" \
+        "cat|function wrapper (prefers bat --paging=never --plain)" \
+        "gs|git status -sb" \
+        "gl|git log --oneline --graph --decorate -n 20" \
+        "ga|git add -A" \
+        "gc|git commit -m" \
+        "gp|git push" \
+        "gco|git checkout" \
+        "gb|git branch" \
+        "gpl|git pull --ff-only" \
+        "dps|docker ps --format 'table {{.Names}} {{.Image}} {{.Status}} {{.Ports}}'" \
+        "dcu|docker compose up -d" \
+        "dcd|docker compose down" \
+        "k|kubectl" \
+        "kgp|kubectl get pods -A" \
+        "kgs|kubectl get svc -A" \
+        "kctx|kubectl config get-contexts" \
+        "kus|kubectl config use-context" \
+        "wanip|external IP via curl" \
+        "lanip|internal IP via ipconfig/hostname" \
+        "ports|lsof -i -P -n | grep LISTEN" \
+        "path|print PATH entries" \
+        "please|sudo last command or args" \
+        "whichshell|Shell and OS info" \
+        "triage_env|Quick host/env snapshot" \
+        "afupdate|Update AliasForge from GitHub" \
+        "afu|Alias for afupdate" \
+        "aliasforge_reload_profile|Source detected Fish profile" \
+        "reloadprofile|Alias for aliasforge_reload_profile" \
+        "sp|Alias for aliasforge_reload_profile" \
+        "bi|brew install" \
+        "bu|brew update" \
+        "bup|brew upgrade" \
+        "bun|brew uninstall" \
+        "bls|brew list" \
+        "cme|chezmoi edit" \
+        "cma|chezmoi apply" \
+        "cmu|chezmoi update" \
+        "cmd|chezmoi diff"
+    for pair in $aliasforge_pairs
+        set -l parts (string split -m1 '|' $pair)
+        set -l name $parts[1]
+        set -l cmd $parts[2]
+        printf "%s: %s\n" $name $cmd
+    end
+end
+function __aliasforge_print_native_aliases
+    if not type -q alias
+        return
+    end
+    alias | while read -l line
+        set line (string trim $line)
+        if test -z "$line"
+            continue
+        end
+        set line (string replace -r '^alias[ \t]+' '' -- $line)
+        set -l parts (string split -m1 '=' $line)
+        set -l name $parts[1]
+        set -l cmd ""
+        if test (count $parts) -gt 1
+            set cmd (string trim --chars \"' $parts[2])
+        end
+        if test -n "$name"
+            if test -n "$cmd"
+                printf "%s: %s\n" $name $cmd
+            else
+                printf "%s\n" $name
+            end
+        end
+    end
+end
+function afaliases
+    __aliasforge_print_native_aliases
+    __aliasforge_print_alias_list
+end
+function afa; afaliases; end
 function afupdate
     set tmp (mktemp -t aliasforge.XXXXXX)
     if test -z "$tmp"
@@ -452,6 +571,9 @@ write_alias_block_nu() {
 # nav/listing
 alias .. = cd ..
 alias ... = cd ../..
+if ((which z | length) > 0) {
+    alias cd = z
+}
 def --wrapped ls [...args] {
     if ((which eza | length) > 0) {
         ^eza ...$args
@@ -635,6 +757,35 @@ def aliasforge_reload_profile [] {
 alias reloadprofile = aliasforge_reload_profile
 alias sp = aliasforge_reload_profile
 alias afu = afupdate
+def afaliases [] {
+    let native_aliases = (try { $nu.scope.aliases } catch {|_| [] })
+    $native_aliases
+    | each {|a|
+        let expansion = (try { $a.expansion } catch {|_| "" })
+        if ($expansion | str length) > 0 {
+            print $"($a.name): ($expansion)"
+        }
+    }
+
+    let function_aliases = [
+        {name: "cd", cmd: "function wrapper (prefers z, fallback cd)"},
+        {name: "ls", cmd: "function wrapper (prefers eza, fallback ls)"},
+        {name: "tree", cmd: "function wrapper (prefers eza --tree, fallback tree/ls)"},
+        {name: "hgrep", cmd: "history filter helper"},
+        {name: "cat", cmd: "function wrapper (prefers bat --paging=never --plain)"},
+        {name: "wanip", cmd: "external IP via curl"},
+        {name: "lanip", cmd: "internal IP via ipconfig/hostname"},
+        {name: "ports", cmd: "lsof LISTEN filter"},
+        {name: "path", cmd: "print PATH entries"},
+        {name: "please", cmd: "sudo passthrough"},
+        {name: "whichshell", cmd: "Shell and OS info"},
+        {name: "triage_env", cmd: "Quick host/env snapshot"},
+        {name: "afupdate", cmd: "Update AliasForge from GitHub"},
+        {name: "aliasforge_reload_profile", cmd: "Reload NuShell config message"}
+    ]
+    $function_aliases | each {|row| print $"($row.name): ($row.cmd)"}
+}
+alias afa = afaliases
 
 # homebrew
 alias bi = ^brew install

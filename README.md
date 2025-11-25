@@ -34,6 +34,12 @@ source ~/.zshrc   # Zsh
 source ~/.bashrc  # Bash  
 exec fish         # Fish  
 
+List everything AliasForge adds to your current shell:
+
+```sh
+afaliases    # or: afa
+```
+
 ### 🍺 macOS Homebrew helpers
 
 If you're on macOS and want the recommended prompt/tools stack, run:
