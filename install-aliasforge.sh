@@ -99,7 +99,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 cd() {
   if command -v z >/dev/null 2>&1; then
-    command z "$@"
+    z "$@"
   else
     command cd "$@"
   fi
@@ -309,7 +309,7 @@ function ..;  cd ..; end
 function ...; cd ../..; end
 function cd
     if type -q z
-        command z $argv
+        z $argv
     else
         builtin cd $argv
     end
