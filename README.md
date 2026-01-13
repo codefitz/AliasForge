@@ -50,6 +50,16 @@ If you're on macOS and want the recommended prompt/tools stack, run:
 
 The script installs everything listed in `brew-requirements.txt`, skipping entries that are already present. Add or remove packages by editing that file—use the `cask:` prefix (e.g. `cask:ghostty`) for apps that ship as casks.
 
+### 🐧 Linux Mint (APT) helpers
+
+If you're on Linux Mint (or Ubuntu) and want the recommended CLI stack, run:
+
+```sh
+./install-linux-mint.sh
+```
+
+The script installs everything listed in `apt-requirements.txt`, skipping entries that are already present. Update the file to match your needs, then rerun the script. It also runs the AliasForge installer with Bash to wire up `~/.aliasforge.sh`.
+
 ⚙️ Customisation
 
 All your aliases live in:

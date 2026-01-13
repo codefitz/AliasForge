@@ -1,0 +1,17 @@
+# APT packages for Linux Mint/Ubuntu (edit as needed)
+# Lines beginning with # are ignored.
+# If a package is unavailable on your Mint release, remove it and rerun.
+
+curl
+git
+lsof
+tree
+zoxide
+nushell
+chezmoi
+gh
+eza
+bat
+btop
+fzf
+zsh-autosuggestions

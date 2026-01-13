@@ -95,6 +95,7 @@ write_alias_block_sh() {
 # AliasForge: POSIX-friendly aliases (Bash/Zsh/Dash)
 
 # Basic nav/listing
+unalias ls 2>/dev/null || true
 alias ..='cd ..'
 alias ...='cd ../..'
 cd() {
