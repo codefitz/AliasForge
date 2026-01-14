@@ -53,15 +53,16 @@ fi
 did_update=0
 missing_packages=()
 
-for entry in "${packages[@]}"; do
-  package="${entry%%#*}"
-  package="${package#"${package%%[![:space:]]*}"}"
-  package="${package%"${package##*[![:space:]]}"}"
-  [[ -z "$package" ]] && continue
-
-  if dpkg -s "$package" >/dev/null 2>&1; then
-    printf '✓ %s already installed\n' "$package"
-    continue
+install_apt_package() {
+  pkg="$1"
+  if dpkg -s "$pkg" >/dev/null 2>&1; then
+    printf '✓ %s already installed\n' "$pkg"
+    return 0
+  fi
+  if ! apt-cache show "$pkg" >/dev/null 2>&1; then
+    missing_packages+=("$pkg (not in APT cache)")
+    printf '⚠ %s not available in APT (skipping)\n' "$pkg"
+    return 1
   fi
 
   if [[ "$did_update" -eq 0 ]]; then
@@ -70,11 +71,22 @@ for entry in "${packages[@]}"; do
     did_update=1
   fi
 
-  printf '→ Installing %s\n' "$package"
-  if ! "${SUDO[@]}" apt-get install -y "$package"; then
-    missing_packages+=("$package")
-    printf '⚠ Failed to install %s (will report at end)\n' "$package"
+  printf '→ Installing %s\n' "$pkg"
+  if ! "${SUDO[@]}" apt-get install -y "$pkg"; then
+    missing_packages+=("$pkg")
+    printf '⚠ Failed to install %s (will report at end)\n' "$pkg"
+    return 1
   fi
+  return 0
+}
+
+for entry in "${packages[@]}"; do
+  package="${entry%%#*}"
+  package="${package#"${package%%[![:space:]]*}"}"
+  package="${package%"${package##*[![:space:]]}"}"
+  [[ -z "$package" ]] && continue
+
+  install_apt_package "$package"
 done
 
 if [[ -f "$script_dir/install-aliasforge.sh" ]]; then

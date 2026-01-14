@@ -60,6 +60,8 @@ If you're on Linux Mint (or Ubuntu) and want the recommended CLI stack, run:
 
 The script installs everything listed in `apt-requirements.txt`, skipping entries that are already present. Update the file to match your needs, then rerun the script. It also runs the AliasForge installer with Bash to wire up `~/.aliasforge.sh`.
 
+If you also want Nerd Fonts on Linux, see `linux-fonts.md` for the system-wide install script and manual instructions.
+
 ⚙️ Customisation
 
 All your aliases live in:
