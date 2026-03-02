@@ -1,0 +1,16 @@
+# Pacman packages for Arch Linux / EndeavourOS (edit as needed)
+# Lines beginning with # are ignored.
+
+curl
+git
+lsof
+tree
+zoxide
+nushell
+chezmoi
+github-cli
+eza
+bat
+btop
+fzf
+zsh-autosuggestions
