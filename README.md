@@ -1,15 +1,15 @@
-# AliasForge  
+# AliasForge
 
-**AliasForge** is a lightweight, cross-platform alias manager that ensures your favourite CLI shortcuts are always with you. It works on macOS and Linux, supporting Bash, Zsh, and Fish shells.  
+**AliasForge** is a lightweight, cross-platform alias manager that ensures your favourite CLI shortcuts are always with you. It works on macOS and Linux, supporting Bash, Zsh, and Fish shells.
 
-## ✨ Features  
+## ✨ Features
 - Cross-platform: macOS and Linux  
 - Multi-shell: Bash, Zsh, Fish, and NuShell support  
 - Idempotent: safe to run multiple times  
 - Easy to customise: edit one file, reload, done  
 - Uninstall option for a clean slate  
 
-## 🚀 Installation  
+## 🚀 Installation
 
 Clone or copy the script to your host
 
@@ -22,17 +22,20 @@ Run:
 ```sh
 chmod +x install-aliasforge.sh
 ./install-aliasforge.sh
+```
 
 This will:
-	•	Install a managed alias file at ~/.aliasforge.sh
-	•	Link it into your shell rc (.zshrc, .bashrc, or .profile)
-	•	For Fish, create an aliasforge.fish file in ~/.config/fish/conf.d/
+- Install a managed alias file at `~/.aliasforge.sh`
+- Link it into your shell rc (`.zshrc`, `.bashrc`, or `.profile`)
+- For Fish, create an `aliasforge.fish` file in `~/.config/fish/conf.d/`
 
 Reload your shell or run:
 
-source ~/.zshrc   # Zsh  
-source ~/.bashrc  # Bash  
-exec fish         # Fish  
+```sh
+source ~/.zshrc   # Zsh
+source ~/.bashrc  # Bash
+exec fish         # Fish
+```
 
 List everything AliasForge adds to your current shell:
 
@@ -50,33 +53,39 @@ If you're on macOS and want the recommended prompt/tools stack, run:
 
 The script installs everything listed in `brew-requirements.txt`, skipping entries that are already present. Add or remove packages by editing that file—use the `cask:` prefix (e.g. `cask:ghostty`) for apps that ship as casks.
 
-### 🐧 Linux Mint (APT) helpers
+### 🐧 Linux helpers
 
-If you're on Linux Mint (or Ubuntu) and want the recommended CLI stack, run:
+If you're on Arch Linux, EndeavourOS, Linux Mint, or Ubuntu and want the recommended CLI stack, run:
 
 ```sh
-./install-linux-mint.sh
+./install-linux.sh
 ```
 
-The script installs everything listed in `apt-requirements.txt`, skipping entries that are already present. Update the file to match your needs, then rerun the script. It also runs the AliasForge installer with Bash to wire up `~/.aliasforge.sh`.
+The script reads `/etc/os-release` and picks the install method automatically:
 
-### 🏹 Arch / EndeavourOS helpers
+- `apt-requirements.txt` for Linux Mint and Ubuntu
+- `pacman-requirements.txt` for Arch Linux and EndeavourOS
 
-If you're on Arch Linux or EndeavourOS and want the recommended CLI stack, run:
+It skips packages that are already present, then runs the AliasForge installer with Bash to wire up `~/.aliasforge.sh`.
+
+If you prefer distro-specific entry points, these wrappers call the same unified Linux installer:
 
 ```sh
 ./install-arch.sh
+./install-linux-mint.sh
+./install-ubuntu.sh
 ```
 
-The script installs everything listed in `pacman-requirements.txt`, skipping entries that are already present. Update the file to match your needs, then rerun the script. Entries prefixed with `aur:` are installed through `yay` or `paru` if either helper is available. It also runs the AliasForge installer with Bash to wire up `~/.aliasforge.sh`.
+For Arch-based systems, entries prefixed with `aur:` in `pacman-requirements.txt` are installed through `yay` or `paru` if either helper is available.
 
 If you also want Nerd Fonts on Linux, see `linux-fonts.md` for the system-wide install script and manual instructions.
 
-⚙️ Customisation
+## ⚙️ Customisation
 
 All your aliases live in:
-	•	Bash/Zsh → ~/.aliasforge.sh
-	•	Fish → ~/.config/fish/conf.d/aliasforge.fish
+
+- Bash/Zsh -> `~/.aliasforge.sh`
+- Fish -> `~/.config/fish/conf.d/aliasforge.fish`
 
 Edit these files to add, remove, or change aliases.
 
@@ -119,18 +128,21 @@ Chezmoi is a great way to sync your aliases across machines. AliasForge already 
 4. On a new machine, run `chezmoi apply`. Chezmoi executes the installer once (linking AliasForge into your rc files) and then writes your synced alias files, so everything is ready after a quick shell reload.
 5. Use `chezmoi edit ~/.aliasforge.sh` (and the Fish/Nu files as needed) plus `chezmoi apply` to push updates to every machine.
 
-🧹 Uninstall
+## 🧹 Uninstall
 
 To remove AliasForge and all its changes:
 
+```sh
 ./install-aliasforge.sh --uninstall
+```
 
 This cleans up rc files and deletes the alias files (including the NuShell module).
 
-📦 Roadmap
-	•	Optional alias packs (git, docker, k8s, cloud)
-	•	Configurable install directory
+## 📦 Roadmap
 
-📜 License
+- Optional alias packs (git, docker, k8s, cloud)
+- Configurable install directory
+
+## 📜 License
 
 MIT License — use, modify, and share freely.
